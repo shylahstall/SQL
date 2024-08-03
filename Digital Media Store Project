@@ -1,0 +1,155 @@
+#Here is a project I did with a dataset from a digital media store and it includes tables for artists, albums, media tracks, invoices, and customers.
+I answered 17 questions using this dataset.
+
+-- 1. Show Customers (their full names, customer ID, and country) who are not in the US. (Hint: != or <> can be used to say "is not equal to").
+Select FirstName, LastName, CustomerId, Country
+From chinook.customers 
+Where Country <> 'US';
+
+-- 2. Show only the Customers from Brazil.
+Select *
+From chinook.customers
+Where Country = 'Brazil';
+
+-- 3. Find the Invoices of customers who are from Brazil. The resulting table should show the customer's full name, Invoice ID, Date of the invoice, and billing country.
+Select cust.FirstName, cust.LastName, inv.InvoiceId, inv.InvoiceDate, inv.BillingCountry
+From chinook.customers cust
+Join chinook.invoices inv
+On cust.customerId = inv.customerId
+Where BillingCountry = 'Brazil';
+
+-- 4. Show the Employees who are Sales Agents.
+Select * from chinook.employees
+Where Title = 'Sales Support Agent';
+
+-- 5. Find a unique/distinct list of billing countries from the Invoice table.
+Select Distinct BillingCountry
+From chinook.invoices;
+
+-- 6. Provide a query that shows the invoices associated with each sales agent. The resulting table should include the Sales Agent's full name.
+Select emp.LastName, emp.FirstName, inv.InvoiceId
+From chinook.employees emp
+Join chinook.customers cust 
+On cust.SupportRepId = emp.EmployeeId
+Join chinook.invoices inv
+On inv.CustomerId = cust.CustomerId;
+
+-- 7. Show the Invoice Total, Customer name, Country, and Sales Agent name for all invoices and customers.
+Select e.FirstName AS 'SR First Name',
+e.LastName AS 'SR Last Name',
+c.FirstName AS 'Customer First Name', 
+c.LastName AS 'Customer Last Name', 
+c.Country, 
+i.Total
+From employees e
+Join customers c
+On c.SupportRepId = e.EmployeeId
+
+Join invoices i
+On i.CustomerId = c.CustomerId; 
+
+-- 8. How many Invoices were there in 2009?
+Select Count(*)
+From chinook.invoices
+Where InvoiceDate BETWEEN '2009-01-01' AND '2009-12-31';
+
+-- 9. What are the total sales for 2009?
+Select SUM(Total) 
+From chinook.invoices
+Where InvoiceDate BETWEEN '2009-01-01' AND '2009-12-31';
+
+-- 10. Write a query that includes the purchased track name with each invoice line ID.
+Select tracks.Name, inv.InvoiceLineID
+From tracks 
+Join invoice_items inv
+On inv.TrackId = tracks.TrackId;
+
+-- 11. Write a query that includes the purchased track name AND artist name with each invoice line ID.
+Select ar.Name AS Artist, t.Name AS Track, i.InvoiceLineId 
+From chinook.invoice_items i
+
+Left Join chinook.tracks t
+On i.TrackID = t.TrackId
+
+Inner Join chinook.albums a
+On a.AlbumId = t.AlbumId
+
+Left Join chinook.artists ar
+On ar.ArtistId = a.ArtistId;
+
+-- 12. Provide a query that shows all the Tracks, and include the Album name, Media type, and Genre.
+Select t.Name AS Track, a.Title as Album, m.Name AS 'Media Type', g.Name AS Genre
+From tracks t
+Join albums a
+On t.AlbumId = a.AlbumId
+
+Join media_types m
+On m.MediaTypeId = t.MediaTypeId
+
+Join genres g
+On g.GenreId = t.GenreId;
+
+-- 13. Show the total sales made by each sales agent.
+Select e.FirstName, e.LastName, 
+Round(Sum(i.Total),2) as 'Total Sales'
+From employees e
+
+Join customers c
+On c.SupportRepId = e.EmployeeId
+
+Join invoices i
+On i.CustomerId = c.CustomerId
+
+Where e.Title = 'Sales Support Agent'
+Group by e.FirstName;
+
+-- 14. Which sales agent made the most dollars in sales in 2009?
+Select e.FirstName, e.LastName,
+Round(Sum(i.Total),2) as 'Total Sales'
+From employees e
+
+Join customers c
+On c.SupportRepId = e.EmployeeId
+
+Join invoices i
+On i.CustomerId = c.CustomerId
+
+Where e.Title = 'Sales Support Agent'
+AND i.InvoiceDate LIKE '2009%'
+Group by e.FirstName
+Order by (Round(Sum(i.Total),2)) DESC
+LIMIT 1;
+
+
+-- Q1 ~ What is the country with the highest sales?
+Select round(sum(total),2), billingcountry
+From invoices
+Group by billingcountry
+Order by (round(sum(total),2)) desc
+Limit 1;
+
+
+-- Q2 ~ What genres were billed in the USA?
+Select g.Name AS Genre, i.billingcountry
+From genres g
+Join invoices i
+On i.invoiceId = g.genreId
+Where billingcountry = 'USA'
+Group by g.name;
+
+-- Q3 ~ What tracks are under the rock genre?
+Select t.name AS 'Track Name', 
+a.name as 'Artist Name', 
+al.Title AS Album,
+g.Name AS Genre
+From tracks t
+Join albums al
+On al.AlbumId = t.AlbumId
+
+Join genres g
+On g.GenreId = t.GenreId
+
+Join artists a
+On al.ArtistId = a.ArtistId
+
+Where g.name = 'Rock';
