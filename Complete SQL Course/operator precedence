@@ -1,0 +1,13 @@
+--Select people either under 30 or over 50 with an income above 50000 that are from either Japan or Australia
+
+Select firstname, lastname, income, age from public.customers
+where income > 50000 and (age < 30 or age >= 50)
+and (country = 'Japan' or country = 'Australia');
+
+select * from public.orders;
+
+--What was our total sales in June of 2004 for orders over 100 dollars?
+
+select totalamount from public.orders 
+where (orderdate >= '2004-06-01' and orderdate <= '2004-06-30')
+And totalamount > 100;
